@@ -14,16 +14,68 @@ default_chunk_overlap = 100
 default_splitter = "RecursiveCharacterTextSplitter"
 default_loader = "FileLoader"
 
+image_based_loader = "DoclingFileLoader"
+image_based_chunk_size = 500
+
+large_document_chunk_size = 2000
+
+def retrieve_special_document():
+    special_document_list = []
+    special_document_index = -1
+    for i, name in enumerate(name_list):
+        print(i + ". " + name)
+    while special_document_index != -1:
+        try:
+            print("Input the related index, or enter -1 to finish. \n" + f"Current image based document list: {special_document_list}\n" + "Index:")
+            special_document_index = int(input(""))
+            if special_document_index == -1:
+                break
+            else:
+                curr_special_document = name_list[special_document_index]
+                special_document_list.append(curr_special_document)
+        except IndexError:
+            print("Please input numbers inside the range")
+        except ValueError:
+            print("Please input integers Only")
+    return special_document_list
+
 def file_name_to_loader_json(name_list):
-    folder_name = "demo_folder_name" # input("Please input your folder name: ")
+    folder_name = input("Please input your folder name: ")
+    special_doc_img = []
+    special_doc_large = []
+    
+    image_bool: int = int(input("Any image based document? If yes, enter 1. Else enter 2."))
+    if image_bool == 1:
+        # Let user select the image
+        special_doc_img = retrieve_special_document()
+        
+    large_doc_bool: int = int(input("Any large document? If yes, enter 1. Else enter 2."))
+    if large_doc_bool == 1:
+        # Let user select the image
+        special_doc_large = retrieve_special_document()
+    
+        
     loader_list = []
     for name in name_list:
         json_curr = {}
+        curr_chunk_size = default_chunk_size
+        curr_chunk_overlap = default_chunk_overlap
+        curr_splitter = default_splitter
+        curr_loader = default_loader
+        if name in special_doc_img and name not in special_doc_large:
+            curr_loader = image_based_loader
+            curr_chunk_size = image_based_chunk_size
+        elif name not in special_doc_img and name in special_doc_large:
+            curr_chunk_size = large_document_chunk_size
+        elif name in special_doc_img and name in special_doc_large:
+            curr_loader = image_based_loader
+        
+        
         base_name = os.path.splitext(name)[0]
-        json_curr['loader'] = default_loader
+        json_curr['loader'] = curr_loader
         json_curr['args'] = {'path': f"{folder_name}/{name}", 'start_page_num': 1}
-        json_curr['splitter'] = default_splitter
-        json_curr['splitter_args'] = {'chunk_size': default_chunk_size, 'chunk_overlap': default_chunk_overlap}
+        json_curr['splitter'] = curr_splitter
+        json_curr['splitter_args'] = {'chunk_size': curr_chunk_size, 'chunk_overlap': curr_chunk_overlap}
         json_curr['metadata'] = {'title' : base_name}
         loader_list.append(json_curr)
     return loader_list
@@ -69,4 +121,5 @@ def main():
     return
 
 if __name__ == "__main__":
-    main()
+    name_list: list = ["I_am_gay.pdf", "I_am_gay2.pdf"]
+    file_name_to_loader_json(name_list)
