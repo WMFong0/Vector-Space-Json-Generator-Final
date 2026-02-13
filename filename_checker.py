@@ -1,5 +1,6 @@
 import os
 
+# filters one name
 def filter_name(original_name):
     Past_Error = ""
     final_string = ""
@@ -41,6 +42,7 @@ def filter_name(original_name):
         return final_string
     return None
 
+# Filtering of whole name list that received via file, still call filter name anyways
 def full_list_name_filter(input_path = "input2.txt", output_path = 'output.txt'): #Name of your input file
 
     filtered_name_list = []
@@ -79,8 +81,10 @@ def full_list_name_filter(input_path = "input2.txt", output_path = 'output.txt')
     
     return filtered_name_list
     
+# For future usage
 Acceptable_character = "abcd"  # Not used
 
+# User input prompt
 def main():
     try:
         print("input 1 for by name input\ninput 2 for by file input.")

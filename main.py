@@ -2,12 +2,13 @@ import json
 import filename_checker
 import os
 
+# default.int
+
 input_path = "input.txt" # Original Vector Store Setting (To keep settings)
 input_path2 = "input2.txt" # File names to be inserted into Vector Store
 output_path = "output.txt" # Vector Space JSON
 output_path2 = "output2.txt" # Formatted Names Output
 
-data_final = {}
 
 default_chunk_size = 1200
 default_chunk_overlap = 100
@@ -19,14 +20,21 @@ image_based_chunk_size = 500
 
 large_document_chunk_size = 2000
 
-def retrieve_special_document():
+# DON"T TOUCH BELOW
+data_final = {}
+
+
+# Just User input Prompt, why you want to change this anyway
+def retrieve_special_document(name_list):
     special_document_list = []
-    special_document_index = -1
+    special_document_index = 0
     for i, name in enumerate(name_list):
-        print(i + ". " + name)
+        print(i, ". ", name)
+    
+    print("Input the related index, or enter -1 to finish.")
     while special_document_index != -1:
         try:
-            print("Input the related index, or enter -1 to finish. \n" + f"Current image based document list: {special_document_list}\n" + "Index:")
+            print(f"Current image based document list: {special_document_list}\n" + "Index:")
             special_document_index = int(input(""))
             if special_document_index == -1:
                 break
@@ -39,29 +47,36 @@ def retrieve_special_document():
             print("Please input integers Only")
     return special_document_list
 
+
+# Input: filtered name list
+# Output: vector space json loader sections
 def file_name_to_loader_json(name_list):
     folder_name = input("Please input your folder name: ")
     special_doc_img = []
     special_doc_large = []
     
-    image_bool: int = int(input("Any image based document? If yes, enter 1. Else enter 2."))
+    # Comment this section when needed
+    image_bool: int = int(input("Any image based document? If yes, enter 1. Else enter 2.\n"))
     if image_bool == 1:
         # Let user select the image
-        special_doc_img = retrieve_special_document()
+        special_doc_img = retrieve_special_document(name_list)
         
-    large_doc_bool: int = int(input("Any large document? If yes, enter 1. Else enter 2."))
+    # Comment this section when needed
+    large_doc_bool: int = int(input("Any large document? If yes, enter 1. Else enter 2.\n"))
     if large_doc_bool == 1:
         # Let user select the image
-        special_doc_large = retrieve_special_document()
+        special_doc_large = retrieve_special_document(name_list)
     
-        
     loader_list = []
     for name in name_list:
         json_curr = {}
+        # DON"T CHANGE ANYTHING HERE. CHANGE VIA VARIABLES ON TOP
         curr_chunk_size = default_chunk_size
         curr_chunk_overlap = default_chunk_overlap
         curr_splitter = default_splitter
         curr_loader = default_loader
+        
+        # Trim the settings based on its specification
         if name in special_doc_img and name not in special_doc_large:
             curr_loader = image_based_loader
             curr_chunk_size = image_based_chunk_size
@@ -70,7 +85,7 @@ def file_name_to_loader_json(name_list):
         elif name in special_doc_img and name in special_doc_large:
             curr_loader = image_based_loader
         
-        
+        # Load the settings into json
         base_name = os.path.splitext(name)[0]
         json_curr['loader'] = curr_loader
         json_curr['args'] = {'path': f"{folder_name}/{name}", 'start_page_num': 1}
@@ -82,6 +97,7 @@ def file_name_to_loader_json(name_list):
     
 def main():
     try:
+        # Read vector space settings
         with open(input_path, 'r') as file:
             loaded_data = json.load(file)
             print(loaded_data)
@@ -101,16 +117,14 @@ def main():
     loaders = file_name_to_loader_json(filtered_name_list)
     data_final['loaders'] = loaders
     
-    
-    print(data_final)
-    
-    # Write the output file with the 
+    # Write output.txt with the finished json
     try:
         with open(output_path, 'w') as file:
             json.dump(data_final, file, indent=4)
     except Exception as e:
         print(f"An error occurred while writing: {e}")
     
+    # Checking section, remove when needed
     try:
         with open(output_path, 'r') as file:
             print("\n")
@@ -118,8 +132,8 @@ def main():
             print(data)
     except Exception as e:
         print(f"An error occurred while reading: {e}")
+    
     return
 
 if __name__ == "__main__":
-    name_list: list = ["I_am_gay.pdf", "I_am_gay2.pdf"]
-    file_name_to_loader_json(name_list)
+    main()
