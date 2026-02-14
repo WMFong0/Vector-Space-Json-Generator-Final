@@ -14,6 +14,10 @@ cd "Your document folder path"
 ```
 ls -1 > input2.txt
 ```
+or 
+```
+ls -Name > input2.txt
+```
 
 ## if it returns error, try
     ls | Select-Object -ExpandProperty Name > input2.txt
