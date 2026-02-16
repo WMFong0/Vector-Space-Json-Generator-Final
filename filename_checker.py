@@ -70,7 +70,11 @@ def full_list_name_filter(
   
     return filtered_name_list  
   
-def main():  
+def main():
+    """  
+    Main prompt for user interaction.  
+    Allows user to filter names manually or via file input.  
+    """  
     logger.info("Filename checker started.")  
     print("input 1 for manual name input\ninput 2 for file input.")  
     while True:  
