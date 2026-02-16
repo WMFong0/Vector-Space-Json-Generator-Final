@@ -21,7 +21,7 @@ ls -Name > input2.txt
 
 ## if it returns error, try
     ls | Select-Object -ExpandProperty Name > input2.txt
-If lower command were used, go insides input2.txt and remove the line "input2.txt" from the file.
+If 2nd or 3rd command were used, go insides input2.txt and remove the line "input2.txt" from the file.
 
 Then Kindly move input2.txt from other folder directory to the program directory
 
