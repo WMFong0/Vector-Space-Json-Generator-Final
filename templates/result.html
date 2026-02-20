@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang='en'>
+	<head>
+		<meta charset='utf-8'/>
+		<meta name='viewport' content='width=device-width, initial-scale=1'/>
+		<title>Results</title>
+		<link rel='stylesheet' href='{{ url_for('static', filename='styles.css') }}'/>
+	</head>
+	<body>
+		<div class='page'>
+			<header class='hero'>
+				<div>
+					<p class='eyebrow'>Step 3</p>
+					<h1>Results</h1>
+				</div>
+			</header>
+			<main class='grid'>
+				<section class='panel'>
+					{% if result %}
+					<div class='result-actions'><a class='cta' href='{{ url_for('download', name='output') }}'>Download output.json</a><a class='cta' href='{{ url_for('download', name='output2') }}'>Download output2.txt</a>{% if result.zip_ready %}<a class='cta' href='{{ url_for('download', name='zip', fname=result.zip_filename) }}'>Download {{ result.zip_filename }}</a>{% endif %}<button class='cta' id='copyJson' type='button'>Copy JSON</button></div>
+					<h3>Sanitized file names</h3>
+					<div class='pill-list'>{% for n in result.filtered_names %}<span>{{ n }}</span>{% endfor %}</div>
+					<h3 style='margin-top:16px;'>Generated JSON</h3>
+					<pre class='code-block' id='jsonBlock'><code id='jsonCode'>{{ result.output_json }}</code></pre>
+					<script>document.getElementById('copyJson').addEventListener('click', async () => { const text = document.getElementById('jsonCode').innerText; try { await navigator.clipboard.writeText(text); const btn = document.getElementById('copyJson'); const old = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent=old, 1200); } catch (e) { alert('Copy failed: ' + e); } });</script>{% else %}
+					<p class='panel-subtitle'>No output yet. Go back to <a href='{{ url_for('upload') }}'>upload</a>.</p>
+					{% endif %}
+				</section>
+			</main>
+		</div>
+	</body>
+</html>

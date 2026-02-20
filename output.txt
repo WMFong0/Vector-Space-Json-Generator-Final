@@ -8,7 +8,7 @@
         {
             "loader": "FileLoader",
             "args": {
-                "path": "demo_folder_name/Ops-Manual--Jul-2023----Part-4-Staffing-V2.pdf",
+                "path": "docs/4_Ex-out_Host_Institution_and_Important_Notes_20251014.pdf",
                 "start_page_num": 1
             },
             "splitter": "RecursiveCharacterTextSplitter",
@@ -17,52 +17,11 @@
                 "chunk_overlap": 100
             },
             "metadata": {
-                "title": "Ops-Manual--Jul-2023----Part-4-Staffing-V2"
-            }
-        },
-        {
-            "loader": "FileLoader",
-            "args": {
-                "path": "demo_folder_name/Ops-Manual--May-2023----Part-1-Operations-v2.pdf",
-                "start_page_num": 1
+                "title": "4_Ex-out_Host_Institution_and_Important_Notes_20251014"
             },
-            "splitter": "RecursiveCharacterTextSplitter",
-            "splitter_args": {
-                "chunk_size": 1200,
-                "chunk_overlap": 100
-            },
-            "metadata": {
-                "title": "Ops-Manual--May-2023----Part-1-Operations-v2"
-            }
-        },
-        {
-            "loader": "FileLoader",
-            "args": {
-                "path": "demo_folder_name/UMAO-AI-training-ver-May-2025.pdf",
-                "start_page_num": 1
-            },
-            "splitter": "RecursiveCharacterTextSplitter",
-            "splitter_args": {
-                "chunk_size": 1200,
-                "chunk_overlap": 100
-            },
-            "metadata": {
-                "title": "UMAO-AI-training-ver-May-2025"
-            }
-        },
-        {
-            "loader": "FileLoader",
-            "args": {
-                "path": "demo_folder_name/Vaseline.pdf",
-                "start_page_num": 1
-            },
-            "splitter": "RecursiveCharacterTextSplitter",
-            "splitter_args": {
-                "chunk_size": 1200,
-                "chunk_overlap": 100
-            },
-            "metadata": {
-                "title": "Vaseline"
+            "settings": {
+                "on_source_conflict": "OVERRIDE",
+                "do_not_split": false
             }
         }
     ]
