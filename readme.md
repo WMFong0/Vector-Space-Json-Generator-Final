@@ -25,4 +25,18 @@ If 2nd or 3rd command were used, go insides input2.txt and remove the line "inpu
 
 Then Kindly move input2.txt from other folder directory to the program directory
 
+## How to run the script
+0. Create a virtual environment
+1. Install the requirement by
+```
+pip install -r requirements.txt
+```
+or 
+```
+python -m pip install -r requirements.txt
+```
+2. Run the script
+```
+python main.py
+```
 output.txt and output2.txt is not nessarily to exist before program execution. The program will automatically create it after program execution (For File input)
