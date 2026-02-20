@@ -1,92 +1,159 @@
+
 <!doctype html>
-<html lang='en'>
-	<head>
-		<meta charset='utf-8'/>
-		<meta name='viewport' content='width=device-width, initial-scale=1'/>
-		<title>Configure upload</title>
-		<link rel='stylesheet' href='{{ url_for('static', filename='styles.css') }}'/>
-	</head>
-	<body>
-		<div class='page'>
-			<header class='hero'>
-				<div>
-					<p class='eyebrow'>Step 2</p>
-					<h1>Configure upload</h1>
-				</div>
-			</header>
-			{% if errors %}
-			<div class='alert alert-error'>
-				<ul>
-					{% for e in errors %}
-					<li>{{ e }}</li>
-					{% endfor %}
-				</ul>
-			</div>
-			{% endif %}{% if warnings %}
-			<div class='alert alert-warning'>
-				<ul>
-					{% for w in warnings %}
-					<li>{{ w }}</li>
-					{% endfor %}
-				</ul>
-			</div>
-			{% endif %}
-			<main class='grid'>
-				<section class='panel'>
-					<h2>Mark files</h2>
-					<form method='post'>
-						<div class='field-group'>
-							<label>Mark image-based documents</label>
-							<div class='file-list'>{% for n in pdf_names %}<label class='file-row'><span class='file-name'>{{ n }}</span><span class='toggle'><input type='checkbox' name='image_docs' value='{{ n }}' {% if n in selected_image_docs %}checked{% endif %}/> Image-based</span></label>{% endfor %}</div>
-						</div>
-						<div class='field-group'>
-							<label>Mark large documents</label>
-							<div class='file-list'>{% for n in pdf_names %}<label class='file-row'><span class='file-name'>{{ n }}</span><span class='toggle'><input type='checkbox' name='large_docs' value='{{ n }}' {% if n in selected_large_docs %}checked{% endif %}/> Large</span></label>{% endfor %}</div>
-						</div>
-						<h2>Advanced options</h2>
-						<div class='panel' style='margin-top:12px;'>
-							<h3 style='margin:0 0 8px;'>Default Upload</h3>
-							<div class='inline-fields'>
-								<div><label for='default_chunk_size'>Default chunk size</label><input id='default_chunk_size' name='default_chunk_size' type='number' value='{{ default_chunk_size }}'/></div>
-								<div><label for='default_chunk_overlap'>Default chunk overlap</label><input id='default_chunk_overlap' name='default_chunk_overlap' type='number' value='{{ default_chunk_overlap }}'/></div>
-							</div>
-						</div>
-						<div class='panel' style='margin-top:12px;'>
-							<h3 style='margin:0 0 8px;'>Image-based Upload</h3>
-							<div class='inline-fields'>
-								<div><label for='image_based_loader'>Image-based loader</label><input id='image_based_loader' name='image_based_loader' value='{{ image_based_loader }}'/></div>
-								<div><label for='image_based_chunk_size'>Image-based chunk size</label><input id='image_based_chunk_size' name='image_based_chunk_size' type='number' value='{{ image_based_chunk_size }}'/></div>
-							</div>
-						</div>
-						<div class='panel' style='margin-top:12px;'>
-							<h3 style='margin:0 0 8px;'>Large-document Upload</h3>
-							<div class='inline-fields'>
-								<div><label for='large_document_chunk_size'>Large-document chunk size</label><input id='large_document_chunk_size' name='large_document_chunk_size' type='number' value='{{ large_document_chunk_size }}'/></div>
-							</div>
-						</div>
-						<div class='panel' style='margin-top:12px;'>
-							<h3 style='margin:0 0 8px;'>Upload Settings</h3>
-							<div class='inline-fields'>
-								<div><label for='on_source_conflict'>on_source_conflict</label><select id='on_source_conflict' name='on_source_conflict'>{% set osc = on_source_conflict %}<option value='OVERRIDE' {% if osc=='OVERRIDE' %}selected{% endif %}>OVERRIDE</option><option value='SKIP' {% if osc=='SKIP' %}selected{% endif %}>SKIP</option><option value='FAIL' {% if osc=='FAIL' %}selected{% endif %}>FAIL</option></select></div>
-								<div><label for='do_not_split'>do_not_split</label><select id='do_not_split' name='do_not_split'>{% set dns = do_not_split %}<option value='false' {% if dns=='false' %}selected{% endif %}>false</option><option value='true' {% if dns=='true' %}selected{% endif %}>true</option></select></div>
-							</div>
-						</div>
-						<div class='panel' style='margin-top:12px;'>
-							<h3 style='margin:0 0 8px;'>Common</h3>
-							<div class='inline-fields'>
-								<div><label for='folder_name'>Folder name</label><input id='folder_name' name='folder_name' value='{{ folder_name }}' placeholder='docs' required/></div>
-								<div><label for='default_splitter'>Default splitter</label><input id='default_splitter' name='default_splitter' value='{{ default_splitter }}'/></div>
-								<div><label for='default_loader'>Default loader</label><input id='default_loader' name='default_loader' value='{{ default_loader }}'/></div>
-							</div>
-						</div>
-						<div class='panel' style='margin-top:12px;'>
-							<h3 style='margin:0 0 8px;'>Optional: Paste Full Settings JSON</h3>
-							<textarea id='settings_text' name='settings_text' rows='8'>{{ settings_text }}</textarea>
-						</div>
-						<div style='margin-top:16px; display:flex; gap:12px;'><a class='secondary' href='{{ url_for('upload') }}'>Back</a><button class='primary' formaction='{{ url_for('generate', upload_id=upload_id) }}' formmethod='post'>Generate</button></div>
-					</form>
-				</section>
-			</main>
-		</div>
-	</body>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Configure upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Step 2</p>
+          <h1>Configure upload</h1>
+        </div>
+      </header>
+
+      {% if errors %}
+      <div class="alert alert-error">
+        <ul>
+          {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if warnings %}
+      <div class="alert alert-warning">
+        <ul>
+          {% for w in warnings %}<li>{{ w }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <main class="grid">
+        <section class="panel">
+          <h2>Mark files</h2>
+          <form method="post" action="{{ url_for('generate', upload_id=upload_id) }}">
+            <div class="field-group">
+              <label>Mark image-based documents</label>
+              <div class="file-list">
+                {% for n in pdf_names %}
+                  <label class="file-row">
+                    <span class="file-name">{{ n }}</span>
+                    <span class="toggle"><input type="checkbox" name="image_docs" value="{{ n }}" {% if n in selected_image_docs %}checked{% endif %}/> Image-based</span>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label>Mark large documents</label>
+              <div class="file-list">
+                {% for n in pdf_names %}
+                  <label class="file-row">
+                    <span class="file-name">{{ n }}</span>
+                    <span class="toggle"><input type="checkbox" name="large_docs" value="{{ n }}" {% if n in selected_large_docs %}checked{% endif %}/> Large</span>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <h2>Advanced options</h2>
+
+            <div class="panel" style="margin-top:12px;">
+              <h3 style="margin:0 0 8px;">Default Upload</h3>
+              <div class="inline-fields">
+                <div>
+                  <label for="default_chunk_size">Default chunk size</label>
+                  <input id="default_chunk_size" name="default_chunk_size" type="number" value="{{ default_chunk_size }}" />
+                </div>
+                <div>
+                  <label for="default_chunk_overlap">Default chunk overlap</label>
+                  <input id="default_chunk_overlap" name="default_chunk_overlap" type="number" value="{{ default_chunk_overlap }}" />
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+              <h3 style="margin:0 0 8px;">Image-based Upload</h3>
+              <div class="inline-fields">
+                <div>
+                  <label for="image_based_loader">Image-based loader</label>
+                  <input id="image_based_loader" name="image_based_loader" value="{{ image_based_loader }}" />
+                </div>
+                <div>
+                  <label for="image_based_chunk_size">Image-based chunk size</label>
+                  <input id="image_based_chunk_size" name="image_based_chunk_size" type="number" value="{{ image_based_chunk_size }}" />
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+              <h3 style="margin:0 0 8px;">Large-document Upload</h3>
+              <div class="inline-fields">
+                <div>
+                  <label for="large_document_chunk_size">Large-document chunk size</label>
+                  <input id="large_document_chunk_size" name="large_document_chunk_size" type="number" value="{{ large_document_chunk_size }}" />
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+              <h3 style="margin:0 0 8px;">Upload Settings</h3>
+              <div class="inline-fields">
+                <div>
+                  <label for="on_source_conflict">on_source_conflict</label>
+                  <select id="on_source_conflict" name="on_source_conflict">
+                    {% set osc = on_source_conflict %}
+                    <option value="OVERRIDE" {% if osc=='OVERRIDE' %}selected{% endif %}>OVERRIDE</option>
+                    <option value="RETAIN" {% if osc=='RETAIN' %}selected{% endif %}>RETAIN</option>
+                    <option value="DUPLICATE" {% if osc=='DUPLICATE' %}selected{% endif %}>DUPLICATE</option>
+                    <option value="RAISE ERROR" {% if osc=='RAISE ERROR' %}selected{% endif %}>RAISE ERROR</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="do_not_split">do_not_split</label>
+                  <select id="do_not_split" name="do_not_split">
+                    {% set dns = do_not_split %}
+                    <option value="false" {% if dns=='false' %}selected{% endif %}>false</option>
+                    <option value="true" {% if dns=='true' %}selected{% endif %}>true</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+              <h3 style="margin:0 0 8px;">Common</h3>
+              <div class="inline-fields">
+                <div>
+                  <label for="folder_name">Folder name</label>
+                  <input id="folder_name" name="folder_name" value="{{ folder_name }}" placeholder="docs" required />
+                </div>
+                <div>
+                  <label for="default_splitter">Default splitter</label>
+                  <input id="default_splitter" name="default_splitter" value="{{ default_splitter }}" />
+                </div>
+                <div>
+                  <label for="default_loader">Default loader</label>
+                  <input id="default_loader" name="default_loader" value="{{ default_loader }}" />
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+              <h3 style="margin:0 0 8px;">Optional: Paste Full Settings JSON</h3>
+              <textarea id="settings_text" name="settings_text" rows="8">{{ settings_text }}</textarea>
+            </div>
+
+            <div style="margin-top:16px; display:flex; gap:12px;">
+              <a class="cta" href="{{ url_for('upload') }}">Back</a>
+              <button class="cta" type="submit">Generate</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </body>
 </html>
