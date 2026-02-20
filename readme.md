@@ -26,7 +26,7 @@ If 2nd or 3rd command were used, go insides input2.txt and remove the line "inpu
 Then Kindly move input2.txt from other folder directory to the program directory
 
 ## How to run the script
-0. Create a virtual environment
+0. Create a virtual environment (Optional)
 1. Install the requirement by
 ```
 pip install -r requirements.txt
