@@ -4,14 +4,6 @@ Phases:
  1) /upload   – upload PDFs (session created)
  2) /mark     – mark image-based / large docs + set options
  3) /generate – build outputs per session and offer downloads
-
-Key fixes:
- - Per-session output directories under runs/<upload_id>/
- - Hardened downloads: no arbitrary file param; route requires upload_id
- - Streamed ZIP creation (no large memory copies)
- - Server-side validation for on_source_conflict and numeric fields
- - Consistent JSON filename and MIME
- - Detailed logging across routes
 """
 from __future__ import annotations
 
@@ -78,11 +70,12 @@ UPLOAD_ID_RE = re.compile(r"^[a-f0-9]{32}$", re.IGNORECASE)
 # Helpers
 # ----------------------------------------------------------------------------
 
+# Validate file format if it is pdf
 def _allowed_file(filename: str) -> bool:
     """Return True if the file extension is .pdf (case-insensitive)."""
     return os.path.splitext(filename.lower())[1] == ".pdf"
 
-
+# 
 def _sanitize_zip_name(filename: str) -> str:
     """Sanitize a filename for use inside the ZIP archive."""
     return filename_checker.sanitize_filename(filename)
