@@ -389,7 +389,7 @@ def generate(upload_id: str):
 
     # output2.txt (sanitized names list)
     output2_path = os.path.join(run_dir, "output2.txt")
-    output2_text = "".join(filtered_names) + ("" if filtered_names else "")
+    output2_text = "".join(filtered_names) + ("\n" if filtered_names else "")
     with open(output2_path, "w", encoding="utf-8") as fh:
         fh.write(output2_text)
 

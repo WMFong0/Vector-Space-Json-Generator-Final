@@ -80,8 +80,8 @@
               <h3 style="margin:0 0 8px;">Image-based Upload</h3>
               <div class="inline-fields">
                 <div>
-                  <label for="image_based_loader">Image-based loader</label>
-                  <input id="image_based_loader" name="image_based_loader" value="{{ image_based_loader }}" />
+                  <label>Image-based loader</label>
+                  <input value="{{ image_based_loader }}" readonly />
                 </div>
                 <div>
                   <label for="image_based_chunk_size">Image-based chunk size</label>
@@ -132,12 +132,12 @@
                   <input id="folder_name" name="folder_name" value="{{ folder_name }}" placeholder="docs" required />
                 </div>
                 <div>
-                  <label for="default_splitter">Default splitter</label>
-                  <input id="default_splitter" name="default_splitter" value="{{ default_splitter }}" />
+                  <label>Default splitter</label>
+                  <input value="{{ default_splitter }}" readonly />
                 </div>
                 <div>
-                  <label for="default_loader">Default loader</label>
-                  <input id="default_loader" name="default_loader" value="{{ default_loader }}" />
+                  <label>Default loader</label>
+                  <input value="{{ default_loader }}" readonly />
                 </div>
               </div>
             </div>
