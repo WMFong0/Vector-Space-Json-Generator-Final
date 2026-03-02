@@ -37,30 +37,46 @@
           <h2>Mark files</h2>
           <form method="post" action="{{ url_for('generate', upload_id=upload_id) }}">
             <div class="field-group">
-              <label>Mark image-based documents</label>
+              <label>Mark special document</label>
               <div class="file-list">
                 {% for n in pdf_names %}
                   <label class="file-row">
-                    <span class="file-name">{{ n }}</span>
-                    <span class="toggle"><input type="checkbox" name="image_docs" value="{{ n }}" {% if n in selected_image_docs %}checked{% endif %}/> Image-based</span>
+                    <span class="file-name" title="{{ n }}">{{ n }}</span>
+                    <div class="checkbox-group">
+                      <label>
+                        <input type="checkbox" name="image_docs" value="{{ n }}" {% if n in selected_image_docs %}checked{% endif %}/>
+                        Image-based
+                      </label>
+                      <label>
+                        <input type="checkbox" name="large_docs" value="{{ n }}" {% if n in selected_large_docs %}checked{% endif %}/>
+                        Large
+                      </label>
+                    </div>
                   </label>
                 {% endfor %}
               </div>
             </div>
 
-            <div class="field-group">
-              <label>Mark large documents</label>
-              <div class="file-list">
-                {% for n in pdf_names %}
-                  <label class="file-row">
-                    <span class="file-name">{{ n }}</span>
-                    <span class="toggle"><input type="checkbox" name="large_docs" value="{{ n }}" {% if n in selected_large_docs %}checked{% endif %}/> Large</span>
-                  </label>
-                {% endfor %}
-              </div>
-            </div>
+             <div class="panel" style="margin-top:12px;">
+               <h3 style="margin:0 0 8px;">Common</h3>
+               <div class="inline-fields">
+                 <div>
+                   <label for="folder_name">Folder name</label>
+                   <input id="folder_name" name="folder_name" value="{{ folder_name }}" placeholder="docs" required />
+                   <small style="color:var(--muted); margin-top:4px; display:block;">Enter "null" to upload without a folder prefix.</small>
+                 </div>
+                 <div>
+                    <label>Default splitter</label>
+                    <div class="read-only-value">{{ default_splitter }}</div>
+                 </div>
+                 <div>
+                    <label>Default loader</label>
+                    <div class="read-only-value">{{ default_loader }}</div>
+                 </div>
+               </div>
+             </div>
 
-            <h2>Advanced options</h2>
+            <h2 style="margin-top:24px;">Advanced options</h2>
 
             <div class="panel" style="margin-top:12px;">
               <h3 style="margin:0 0 8px;">Default Upload</h3>
@@ -80,8 +96,8 @@
               <h3 style="margin:0 0 8px;">Image-based Upload</h3>
               <div class="inline-fields">
                 <div>
-                  <label>Image-based loader</label>
-                  <input value="{{ image_based_loader }}" readonly />
+                   <label>Image-based loader</label>
+                   <div class="read-only-value">{{ image_based_loader }}</div>
                 </div>
                 <div>
                   <label for="image_based_chunk_size">Image-based chunk size</label>
@@ -120,24 +136,6 @@
                     <option value="false" {% if dns=='false' %}selected{% endif %}>false</option>
                     <option value="true" {% if dns=='true' %}selected{% endif %}>true</option>
                   </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="panel" style="margin-top:12px;">
-              <h3 style="margin:0 0 8px;">Common</h3>
-              <div class="inline-fields">
-                <div>
-                  <label for="folder_name">Folder name</label>
-                  <input id="folder_name" name="folder_name" value="{{ folder_name }}" placeholder="docs" required />
-                </div>
-                <div>
-                  <label>Default splitter</label>
-                  <input value="{{ default_splitter }}" readonly />
-                </div>
-                <div>
-                  <label>Default loader</label>
-                  <input value="{{ default_loader }}" readonly />
                 </div>
               </div>
             </div>

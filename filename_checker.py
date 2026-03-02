@@ -81,3 +81,6 @@ def filter_name(original_name: str) -> str | None:
     safe = sanitize_basename(original_name)
     logger.debug("filter_name: input=%r -> %r", original_name, safe)
     return safe
+
+
+UPLOAD_ID_RE = re.compile(r"^[a-f0-9]{32}$", re.IGNORECASE)

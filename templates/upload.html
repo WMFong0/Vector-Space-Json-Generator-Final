@@ -1,21 +1,21 @@
-
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Upload documents</title>
+    <title>Upload documents - Step 1</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
   <body>
     <div class="page">
       <header class="hero">
         <div>
-          <p class="eyebrow">Step 1</p>
-          <h1>Upload documents</h1>
+          <p class="eyebrow">Step 1 - File Upload</p>
+          <h1>Upload PDF documents</h1>
         </div>
       </header>
 
+      <!-- Display error messages if any -->
       {% if errors %}
       <div class="alert alert-error">
         <ul>
@@ -24,6 +24,7 @@
       </div>
       {% endif %}
 
+      <!-- Upload form with multi-file support -->
       <main class="grid">
         <section class="panel">
           <form method="post" enctype="multipart/form-data">

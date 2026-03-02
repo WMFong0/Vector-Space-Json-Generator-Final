@@ -4,18 +4,22 @@ Phases:
  1) /upload   – upload PDFs (session created)
  2) /mark     – mark image-based / large docs + set options
  3) /generate – build outputs per session and offer downloads
+
+Features:
+ - Session-based processing with UUID-based upload IDs
+ - File sanitization via filename_checker module
+ - Security: isolated runs per session, no path traversal
+ - Fixed loader/splitter settings (display-only, not editable)
+ - Supports both image-based and large-document processing
 """
 from __future__ import annotations
 
 import json
 import logging
 import os
-import re
 import shutil
 import uuid
 import zipfile
-from typing import Iterable
-
 from flask import (
     Flask,
     flash,
@@ -27,158 +31,30 @@ from flask import (
     url_for,
 )
 
-import filename_checker
-
-# ----------------------------------------------------------------------------
-# Logging setup
-# ----------------------------------------------------------------------------
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+from config import app, logger, RUNS_ROOT, ALLOWED_OSC, DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNK_SIZE, DEFAULT_SPLITTER, DEFAULT_LOADER, IMAGE_BASED_CHUNK_SIZE, IMAGE_BASED_LOADER, LARGE_DOCUMENT_CHUNK_SIZE, DEFAULT_UPLOAD_SETTINGS, UPLOAD_ID_RE, UPLOAD_ROOT
+from helpers import (
+    _allowed_file,
+    _sanitize_zip_name,
+    _dedupe_zip_name,
+    _filter_names_from_list,
+    _cleanup_old_sessions,
+    _generate_loaders,
+    _runs_dir,
+    _validate_upload_id,
+    _safe_docs_basename,
+    generate_loader_names,
 )
-logger = logging.getLogger(__name__)
-
-# ----------------------------------------------------------------------------
-# App & constants
-# ----------------------------------------------------------------------------
-app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50MB
-app.secret_key = os.environ.get("APP_SECRET_KEY", "dev-secret")
-
-RUNS_ROOT = "runs"
-UPLOAD_ROOT = "tmp_uploads"
-
-# Default processing values
-DEFAULT_CHUNK_SIZE = 1200
-DEFAULT_CHUNK_OVERLAP = 100
-DEFAULT_SPLITTER = "RecursiveCharacterTextSplitter"
-DEFAULT_LOADER = "FileLoader"
-IMAGE_BASED_LOADER = "DoclingFileLoader"
-IMAGE_BASED_CHUNK_SIZE = 500
-LARGE_DOCUMENT_CHUNK_SIZE = 2000
-
-# New on_source_conflict options
-ALLOWED_OSC = {"OVERRIDE", "RETAIN", "DUPLICATE", "RAISE ERROR"}
-DEFAULT_UPLOAD_SETTINGS = {
-    "on_source_conflict": "OVERRIDE",
-    "do_not_split": False,
-}
-
-UPLOAD_ID_RE = re.compile(r"^[a-f0-9]{32}$", re.IGNORECASE)
-
-# ----------------------------------------------------------------------------
-# Helpers
-# ----------------------------------------------------------------------------
-
-# Validate file format if it is pdf
-def _allowed_file(filename: str) -> bool:
-    """Return True if the file extension is .pdf (case-insensitive)."""
-    return os.path.splitext(filename.lower())[1] == ".pdf"
-
-# 
-def _sanitize_zip_name(filename: str) -> str:
-    """Sanitize a filename for use inside the ZIP archive."""
-    return filename_checker.sanitize_filename(filename)
-
-
-def _dedupe_zip_name(name: str, seen: set) -> str:
-    """De-duplicate a name within a set by appending -N before extension."""
-    if name not in seen:
-        seen.add(name)
-        return name
-    base, ext = os.path.splitext(name)
-    i = 2
-    while f"{base}-{i}{ext}" in seen:
-        i += 1
-    cand = f"{base}-{i}{ext}"
-    seen.add(cand)
-    return cand
-
-
-def _filter_names_from_list(names: Iterable[str]) -> list[str]:
-    """Sanitize a list of filenames, preserving extensions; skip empties."""
-    out: list[str] = []
-    for line in names:
-        if not line:
-            continue
-        base, ext = os.path.splitext(line)
-        safe_base = filename_checker.filter_name(base)
-        if safe_base is not None:
-            out.append(f"{safe_base}{ext}")
-    logger.debug("_filter_names_from_list: %r -> %r", list(names), out)
-    return out
-
-
-def _generate_loaders(
-    name_list: list[str],
-    folder_name: str,
-    image_set: set[str],
-    large_set: set[str],
-    default_chunk_size: int,
-    default_chunk_overlap: int,
-    default_splitter: str,
-    default_loader: str,
-    image_based_loader: str,
-    image_based_chunk_size: int,
-    large_document_chunk_size: int,
-    upload_settings: dict,
-) -> list[dict]:
-    """Build the list of loader entries for the output JSON."""
-    loader_list: list[dict] = []
-    for name in name_list:
-        curr_size = default_chunk_size
-        curr_overlap = default_chunk_overlap
-        curr_splitter = default_splitter
-        curr_loader = default_loader
-        if name in image_set and name not in large_set:
-            curr_loader = image_based_loader
-            curr_size = image_based_chunk_size
-        elif name not in image_set and name in large_set:
-            curr_size = large_document_chunk_size
-        elif name in image_set and name in large_set:
-            curr_loader = image_based_loader
-        base_name = os.path.splitext(name)[0]
-        loader_list.append(
-            {
-                "loader": curr_loader,
-                "args": {"path": f"{folder_name}/{name}", "start_page_num": 1},
-                "splitter": curr_splitter,
-                "splitter_args": {"chunk_size": curr_size, "chunk_overlap": curr_overlap},
-                "metadata": {"title": base_name},
-                "settings": {
-                    "on_source_conflict": upload_settings.get("on_source_conflict", "OVERRIDE"),
-                    "do_not_split": bool(upload_settings.get("do_not_split", False)),
-                },
-            }
-        )
-    return loader_list
-
-
-def _runs_dir(upload_id: str) -> str:
-    """Return the per-session runs directory path."""
-    return os.path.join(RUNS_ROOT, upload_id)
-
-
-def _validate_upload_id(upload_id: str) -> bool:
-    """Check upload_id format to avoid traversal or malformed ids."""
-    return bool(UPLOAD_ID_RE.match(upload_id))
-
-
-def _safe_docs_basename(folder_name: str) -> str:
-    """Return sanitized docs basename with 'docs' fallback for empty input.
-
-    If the user provided a non-empty name, we sanitize it (which may become
-    'file' depending on characters). If the user provided empty/whitespace,
-    we fallback to 'docs'.
-    """
-    if not folder_name or not folder_name.strip():
-        return "docs"
-    return filename_checker.sanitize_basename(folder_name)
-
 
 # ----------------------------------------------------------------------------
 # Routes
 # ----------------------------------------------------------------------------
+
+@app.route("/health")
+def health_check():
+    """Return health status."""
+    return {"status": "healthy"}
+
+
 @app.route("/")
 def home():
     """Redirect to the upload page."""
@@ -208,13 +84,19 @@ def upload():
             with open(meta_path, "w", encoding="utf-8") as meta:
                 json.dump(mapping, meta)
             logger.info("Upload created: upload_id=%s files=%d", upload_id, len(valid))
+            _cleanup_old_sessions()
             return redirect(url_for("mark", upload_id=upload_id))
     return render_template("upload.html", errors=errors)
 
 
 @app.route("/mark/<upload_id>", methods=["GET", "POST"])
 def mark(upload_id: str):
-    """Step 2: Mark docs and configure options for a given session."""
+    """Step 2: Mark docs and configure options for a given session.
+    
+    This route renders the configuration page and handles form submissions.
+    It now uses a combined single-row layout for both image-based and large
+    document checkboxes for each file.
+    """
     if not _validate_upload_id(upload_id):
         logger.warning("Invalid upload_id on /mark: %s", upload_id)
         return ("Invalid session id.", 400)
@@ -280,6 +162,7 @@ def mark(upload_id: str):
         if not pdf_names:
             errors.append("No PDFs found for this session.")
         if not errors:
+            _cleanup_old_sessions()
             return redirect(url_for("generate", upload_id=upload_id))
 
     return render_template(
@@ -297,7 +180,16 @@ def mark(upload_id: str):
 
 @app.route("/generate/<upload_id>", methods=["GET", "POST"])
 def generate(upload_id: str):
-    """Step 3: Generate outputs for a given session and render results."""
+    """Step 3: Generate outputs for a given session and render results.
+    
+    This route processes form data, validates inputs, and generates:
+    - output.json: Vector space processing configuration
+    - output2.txt: Sanitized filenames list
+    - .zip file: Original PDFs packaged together
+    
+    The checkbox layout has been changed to single-row per file (image-based
+    and large checkboxes on same row) but form handling remains unchanged.
+    """
     if not _validate_upload_id(upload_id):
         logger.warning("Invalid upload_id on /generate: %s", upload_id)
         return redirect(url_for("mark", upload_id=upload_id))
@@ -398,11 +290,7 @@ def generate(upload_id: str):
         "on_source_conflict": on_source_conflict,
         "do_not_split": (do_not_split == "true"),
     }
-    name_set = set(filtered_names)
-    image_set_input = set(_filter_names_from_list(selected_image_docs))
-    large_set_input = set(_filter_names_from_list(selected_large_docs))
-    image_set = image_set_input & name_set
-    large_set = large_set_input & name_set
+    image_set, large_set = generate_loader_names(selected_image_docs, selected_large_docs, pdf_names)
 
     loaders = _generate_loaders(
         filtered_names,
@@ -434,7 +322,7 @@ def generate(upload_id: str):
         fh.write(json.dumps(data_final, indent=4))
 
     # Build ZIP (streamed); name based on folder_name (with fallback rule)
-    safe_docs_name = _safe_docs_basename(folder_name)
+    safe_docs_name = "output" if folder_name == "null" else _safe_docs_basename(folder_name)
     zip_filename = f"{safe_docs_name}.zip"
     zip_path = os.path.join(run_dir, zip_filename)
     try:
@@ -468,6 +356,7 @@ def generate(upload_id: str):
         "zip_filename": zip_filename,
     }
     logger.info("Generated outputs for upload_id=%s -> %s", upload_id, run_dir)
+    _cleanup_old_sessions()
     return render_template("result.html", errors=[], warnings=get_flashed_messages(), result=result, upload_id=upload_id)
 
 

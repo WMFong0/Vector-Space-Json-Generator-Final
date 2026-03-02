@@ -115,30 +115,40 @@ input[type=file] {
 }
 
 .file-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: #fffdf7
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "file actions";
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fffdf7
 }
 
 .file-name {
-    font-size: 14px;
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  grid-area: file;
 }
 
-.toggle {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--muted)
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  grid-area: actions;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
 }
 
 button.primary {
@@ -237,6 +247,16 @@ button.primary {
     font-size: 12px
 }
 
+.read-only-value {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fffdf7;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+
 @media(max-width:720px) {
     .hero {
         flex-direction: column;
@@ -251,4 +271,5 @@ button.primary {
         grid-auto-flow: row;
         grid-auto-columns: initial
     }
+
 }
