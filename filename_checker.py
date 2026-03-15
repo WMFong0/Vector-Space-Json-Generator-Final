@@ -12,7 +12,8 @@ def filter_name(original_name):
                 'A' <= user_input_char <= 'Z' or 
                 '0' <= user_input_char <= '9' or 
                 user_input_char == '-' or 
-                user_input_char == '_'):
+                user_input_char == '_' or
+                user_input_char == '.'):
                 final_string += user_input_char
                 
             else:
