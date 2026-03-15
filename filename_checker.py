@@ -1,111 +1,101 @@
-import os
-
-# filters one name
-def filter_name(original_name):
-    Past_Error = ""
-    final_string = ""
-    
-    if original_name != "":
-        for user_input_char in original_name:
-            # Acceptable Character
-            if ('a' <= user_input_char <= 'z' or 
-                'A' <= user_input_char <= 'Z' or 
-                '0' <= user_input_char <= '9' or 
-                user_input_char == '-' or 
-                user_input_char == '_' or
-                user_input_char == '.'):
-                final_string += user_input_char
-                
-            else:
-                if user_input_char == '\n':
-                    # Skip newline characters
-                    continue
-                
-                # Only output error that has not been introduced
-                if user_input_char in Past_Error:
-                    final_string += '_'
-                    continue
-                
-                Past_Error += user_input_char
-                # Output Not accepted Character
-                if user_input_char == " ":
-                    print("Error! Space is not allowed")
-                else: 
-                    print(f"Error! {user_input_char} is not allowed")
-                
-                # Skip ) character (don't add anything to final_string)
-                if user_input_char == ")":
-                    continue
-                    
-                # Replace other special char with _
-                final_string += '_'
-        
-        return final_string
-    return None
-
-# Filtering of whole name list that received via file, still call filter name anyways
-def full_list_name_filter(input_path = "input2.txt", output_path = 'output.txt'): #Name of your input file
-
-    filtered_name_list = []
-    
-    try:
-        with open(input_path, 'r') as file:  # Read permission
-            for line in file:
-                if line.strip() == "" or line == '\n':
-                    continue
-                
-                # Remove trailing newline before processing
-                line = line.rstrip('\n')
-                base_name, extension = os.path.splitext(line)
-                
-                filtered_name = filter_name(base_name)
-                if filtered_name is not None:
-                    filtered_name_with_extension = filtered_name + extension
-                    filtered_name_list.append(filtered_name_with_extension)
-    except FileNotFoundError:
-        print(f"Error: The file '{input_path}' was not found.")
-        return
-    except Exception as e:
-        print(f"An error occurred while reading: {e}")
-        return
-    
-    
-            
-    try:
-        with open(output_path, 'w') as file:  # Write permission
-            for name in filtered_name_list:
-                file.write(f"{name}\n")
-        print(f"Output written to {output_path}")
-        
-    except Exception as e:
-        print(f"An error occurred while writing: {e}")
-    
-    return filtered_name_list
-    
-# For future usage
-Acceptable_character = "abcd"  # Not used
-
-# User input prompt
+import re  
+from pathlib import Path  
+  
+def filter_name(original_name: str) -> str | None:  
+    """  
+    Filters the given file name to only allow alphanumeric characters, hyphens, and underscores.  
+    Replaces any illegal character with an underscore.  
+    Args:  
+        original_name (str): The original file name (without extension).  
+    Returns:  
+        str: The filtered file name, or None if the input is empty.  
+    """  
+    if not original_name:  
+        return None  
+  
+    # Replace any character not allowed with '_'  
+    filtered = re.sub(r'[^a-zA-Z0-9\-_.]', '_', original_name)  
+    # Report illegal characters  
+    illegal_chars = set(re.findall(r'[^a-zA-Z0-9\-_]', original_name))  
+    for char in illegal_chars:  
+        if char == ' ':  
+            print("Error! Space is not allowed")  
+        else:  
+            print(f"Error! '{char}' is not allowed")  
+    return filtered  
+  
+def full_list_name_filter(  
+        input_path: str = "input2.txt",  
+        output_path: str = "output.txt"  
+    ) -> list[str]:  
+    """  
+    Filters all file names in the input file and writes the filtered names to the output file.  
+    Returns the filtered name list.  
+    Args:  
+        input_path (str): Path to the input file.  
+        output_path (str): Path to the output file.  
+    Returns:  
+        list[str]: List of filtered file names (with extensions).  
+    """  
+    filtered_name_list = []  
+    input_file = Path(input_path)  
+    output_file = Path(output_path)  
+  
+    if not input_file.exists():  
+        print(f"Error: The file '{input_path}' was not found.")  
+        return []  
+  
+    try:  
+        with input_file.open('r', encoding='utf-8') as infile:  
+            for line in infile:  
+                line = line.strip()  
+                if not line:  
+                    continue  
+                base_name, extension = Path(line).stem, Path(line).suffix  
+                filtered_name = filter_name(base_name)  
+                if filtered_name:  
+                    filtered_name_with_ext = filtered_name + extension  
+                    filtered_name_list.append(filtered_name_with_ext)  
+    except Exception as e:  
+        print(f"An error occurred while reading: {e}")  
+        return []  
+  
+    try:  
+        with output_file.open('w', encoding='utf-8') as outfile:  
+            for name in filtered_name_list:  
+                outfile.write(f"{name}\n")  
+        print(f"Output written to {output_path}")  
+    except Exception as e:  
+        print(f"An error occurred while writing: {e}")  
+  
+    return filtered_name_list  
+  
 def main():
-    try:
-        print("input 1 for by name input\ninput 2 for by file input.")
-        user_input = int(input("Your selection: "))
-    except ValueError:
-        print("Invalid input. Please input 1 or 2.")
-        return
-    
-    if user_input == 1:
-        while True:
-            user_input = input("Please input your file name: ")
-            if user_input != "":
-                filtered_name = filter_name(user_input)
-                print(f"Fixed name: {filtered_name}")
-            else:
-                break
-            
-    elif user_input == 2:
-        
-        filtered_name_list = full_list_name_filter()
-        
-        
-        
+    """  
+    Main prompt for user interaction.  
+    Allows user to filter names manually or via file input.  
+    """  
+    logger.info("Filename checker started.")  
+    print("input 1 for manual name input\ninput 2 for file input.")  
+    while True:  
+        try:  
+            choice = int(input("Your selection: "))  
+            if choice in (1, 2):  
+                break  
+            print("Invalid input. Please input 1 or 2.")  
+        except ValueError:  
+            print("Invalid input. Please input 1 or 2.")  
+  
+    if choice == 1:  
+        while True:  
+            user_input = input("Please input your file name (or empty to quit): ")  
+            if not user_input:  
+                break  
+            filtered_name = filter_name(user_input)  
+            print(f"Fixed name: {filtered_name}")  
+    elif choice == 2:  
+        filtered_name_list = full_list_name_filter()  
+        print("Filtered names:", filtered_name_list)  
+  
+if __name__ == "__main__":  
+    main()  
